@@ -9,7 +9,19 @@ add_executable(clothing_app src/main.c
         src/http_handler.c
         include/http_handler.h
         src/auth_validator.c
-        include/auth_validator.h)
+        include/auth_validator.h
+        src/utils.c
+        include/utils.h
+        src/encryption.c
+        include/encryption.h)
 
 find_package(CURL REQUIRED)
 target_link_libraries(clothing_app PRIVATE CURL::libcurl)
+
+find_package(cJSON CONFIG REQUIRED)
+target_link_libraries(clothing_app PRIVATE cjson)
+
+find_package(unofficial-sodium CONFIG REQUIRED)
+target_link_libraries(clothing_app PRIVATE unofficial-sodium::sodium)
+
+

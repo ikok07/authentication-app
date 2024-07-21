@@ -1,5 +1,11 @@
 #include <stdio.h>
+#include <sodium.h>
+#include <string.h>
+
 #include "../include/auth.h"
+#include "../include/utils.h"
+#include "../include/encryption.h"
+
 
 void executeOption(int option) {
 
@@ -16,13 +22,15 @@ void listOptions() {
 
 
 int main(void) {
-
+    setbuf(stdout, NULL);
+    loadEnvFile();
+    if (sodium_init() < 0) {
+        perror("Failed to load sodium library!");
+        return 1;
+    }
     printf("Welcome to the Clothes App\n");
 
-    bool isAuth = authenticate();
-    while (!isAuth) {
-        isAuth = authenticate();
-    }
+    authenticate();
 
     listOptions();
 

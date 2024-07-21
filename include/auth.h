@@ -5,7 +5,8 @@
 #ifndef AUTH_H
 #define AUTH_H
 #include <stdbool.h>
+#include <stddef.h>
 
-bool authenticate();
+void authenticate();
 
 #endif //AUTH_H

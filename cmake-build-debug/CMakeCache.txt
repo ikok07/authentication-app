@@ -241,6 +241,12 @@ VCPKG_PREFER_SYSTEM_LIBS:BOOL=OFF
 //Enable the setup of CMAKE_PROGRAM_PATH to vcpkg paths
 VCPKG_SETUP_CMAKE_PROGRAM_PATH:BOOL=ON
 
+//Path to a library.
+VCPKG_SODIUM_LIBRARY_DEBUG:FILEPATH=C:/Users/ifloa/.vcpkg-clion/vcpkg/installed/x64-windows/debug/lib/libsodium.lib
+
+//Path to a library.
+VCPKG_SODIUM_LIBRARY_RELEASE:FILEPATH=C:/Users/ifloa/.vcpkg-clion/vcpkg/installed/x64-windows/lib/libsodium.lib
+
 //Vcpkg target triplet (ex. x86-windows)
 VCPKG_TARGET_TRIPLET:STRING=x64-windows
 
@@ -280,6 +286,9 @@ Z_VCPKG_PWSH_PATH:FILEPATH=Z_VCPKG_PWSH_PATH-NOTFOUND
 // triplet
 _VCPKG_INSTALLED_DIR:PATH=C:/Users/ifloa/.vcpkg-clion/vcpkg/installed
 
+//The directory containing a CMake configuration file for cJSON.
+cJSON_DIR:PATH=C:/Users/ifloa/.vcpkg-clion/vcpkg/installed/x64-windows/share/cjson
+
 //Value Computed by CMake
 clothing_app_BINARY_DIR:STATIC=C:/Users/ifloa/CLionProjects/clothing-app/cmake-build-debug
 
@@ -288,6 +297,9 @@ clothing_app_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
 clothing_app_SOURCE_DIR:STATIC=C:/Users/ifloa/CLionProjects/clothing-app
+
+//The directory containing a CMake configuration file for unofficial-sodium.
+unofficial-sodium_DIR:PATH=C:/Users/ifloa/.vcpkg-clion/vcpkg/installed/x64-windows/share/unofficial-sodium
 
 
 ########################
