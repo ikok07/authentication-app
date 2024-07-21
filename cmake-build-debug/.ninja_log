@@ -1,0 +1,4 @@
+# ninja log v6
+4	132	7432750690860818	CMakeFiles/clothing_app.dir/src/main.c.obj	e05778dd72ca9c74
+16	142	7432750690970799	CMakeFiles/clothing_app.dir/src/auth.c.obj	480d5db0f9f1093d
+142	250	7432750692231706	clothing_app.exe	24f225616e68cedf
