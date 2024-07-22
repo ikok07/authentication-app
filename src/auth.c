@@ -10,6 +10,7 @@
 #include <string.h>
 #include <cjson/cJSON.h>
 #include <sodium/crypto_secretbox.h>
+#include <sodium/utils.h>
 
 #include "../include/http_handler.h"
 #include "../include/auth_validator.h"
@@ -23,47 +24,70 @@ char *retrieve_credentials() {
     }
 
     einfo_t *enc_info = malloc(sizeof(einfo_t));
-    fread(&enc_info->encrypted_size, sizeof(size_t), 1, fp);
-    fread(&enc_info->nonce, crypto_secretbox_NONCEBYTES, 1, fp);
-    enc_info->encrypted_msg = malloc(enc_info->encrypted_size);
-    fread(enc_info->encrypted_msg, enc_info->encrypted_size, 1, fp);
+    if (enc_info == NULL) {
+        perror("Failed to retrieve credentials!");
+        fclose(fp);
+        return NULL;
+    }
 
-    char *credentials = malloc(enc_info->encrypted_size - crypto_secretbox_MACBYTES);
-    int result = decrypt_text(credentials, *enc_info);
+    fread(&enc_info->encrypted_size, sizeof(size_t), 1, fp);
+    fread(enc_info->nonce, sizeof(unsigned char), crypto_secretbox_NONCEBYTES, fp);
+    fread(enc_info->key, sizeof(unsigned char), crypto_secretbox_KEYBYTES, fp);
+    enc_info->encrypted_msg = malloc(enc_info->encrypted_size * sizeof(unsigned char));
+    fread(enc_info->encrypted_msg, sizeof(unsigned char), enc_info->encrypted_size, fp);
+
+    char *credentials = malloc(enc_info->encrypted_size + 1);
+    if (credentials == NULL) {
+        free(enc_info->encrypted_msg);
+        free(enc_info);
+        fclose(fp);
+        return NULL;
+    }
+    int result = decrypt_text(credentials, enc_info);
 
     if (result != 0) {
         perror("Failed to retrieve credentials!");
+        sodium_memzero(credentials, enc_info->encrypted_size);
         free(credentials);
         free(enc_info->encrypted_msg);
         free(enc_info);
+        fclose(fp);
         return NULL;
     }
 
     fclose(fp);
+    sodium_memzero(enc_info->encrypted_msg, enc_info->encrypted_size);
     free(enc_info->encrypted_msg);
     free(enc_info);
     return credentials;
 }
 
-bool save_credentials(char *token) {
+int save_credentials(char *token) {
     einfo_t *enc_info = malloc(sizeof(einfo_t));
+    if (enc_info == NULL) return -1;
     const int result = encrypt_text(enc_info, token);
-    if (result != 0) return false;
+    if (result != 0) {
+        free(enc_info);
+        return -2;
+    }
 
     FILE *fp = fopen("../config/auth.bin", "wb");
     if (fp == NULL) {
+        free(enc_info->encrypted_msg);
+        free(enc_info);
         perror("Failed to save credentials!");
-        return false;
+        return -3;
     }
 
     fwrite(&enc_info->encrypted_size, sizeof(size_t), 1, fp);
-    fwrite(enc_info->nonce, crypto_secretbox_NONCEBYTES, 1 ,fp);
-    fwrite(enc_info->encrypted_msg, enc_info->encrypted_size, 1, fp);
+    fwrite(enc_info->nonce, sizeof(unsigned char), crypto_secretbox_NONCEBYTES ,fp);
+    fwrite(enc_info->key, sizeof(unsigned char), crypto_secretbox_KEYBYTES ,fp);
+    fwrite(enc_info->encrypted_msg, sizeof(unsigned char), enc_info->encrypted_size, fp);
 
     free(enc_info->encrypted_msg);
     free(enc_info);
     fclose(fp);
-    return true;
+    return 0;
 }
 
 bool login() {
@@ -78,7 +102,7 @@ bool login() {
     return false;
 }
 
-bool signup() {
+int signup() {
     char username[100];
     char email[100];
     char password[100];
@@ -109,7 +133,7 @@ bool signup() {
     cJSON_AddStringToObject(json, "confirmPassword", confirm_password);
     char *json_str = cJSON_Print(json);
     char *response = malloc(1);
-    int result = make_request(
+    const int result = make_request(
         "http://localhost:8080/api/v1/user/signup",
         POST,
         json_str,
@@ -119,30 +143,30 @@ bool signup() {
         0,
         &response
         );
-    if (result != 0) return false;
+    if (result != 0) return 1;
 
     cJSON *json_response = cJSON_Parse(response);
     if (json_response == NULL) {
         perror("Sign Up failed. Please try again!");
-        return false;
+        return 1;
     }
     cJSON *token = cJSON_GetObjectItemCaseSensitive(json_response, "token");
     if (token == NULL || token->valuestring == NULL) {
         perror("Sign Up failed. Please try again!");
-        return false;
+        return 1;
     }
-
-    if (!save_credentials(token->valuestring)) {
+    printf("token: %s\n", token->valuestring);
+    if (save_credentials(token->valuestring) != 0) {
         perror("Sign Up failed. Please try again!");
-        return false;
+        return 1;
     }
 
-    return true;
+    return 0;
 }
 
 void authenticate() {
     char *token = retrieve_credentials();
-    printf("%s", token);
+    printf("token: %s\n", token);
     if (token != NULL) return;
 
     while (token == NULL) {
@@ -155,10 +179,11 @@ void authenticate() {
 
         switch (option) {
             case 1:
-                if (login()) token = retrieve_credentials();
+                // if (login()) token = retrieve_credentials();
                 break;
             case 2:
-                if (signup()) token = retrieve_credentials();
+                const int result = signup();
+                if (result == 0) token = retrieve_credentials();
                 break;
             case 3:
                 exit(1);

@@ -12,12 +12,12 @@ void executeOption(int option) {
 }
 
 void listOptions() {
-    int option = 0;
-    do {
-
-        executeOption(option);
-    } while (option >= 0);
-
+    printf("Options:\n");
+    // int option = 0;
+    // do {
+    //
+    //     executeOption(option);
+    // } while (option >= 0);
 }
 
 
