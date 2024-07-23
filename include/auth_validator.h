@@ -5,6 +5,6 @@
 #ifndef AUTH_VALIDATOR_H
 #define AUTH_VALIDATOR_H
 
-char *validate_pass(char *password);
+char *validate_pass(const char *password);
 
 #endif //AUTH_VALIDATOR_H

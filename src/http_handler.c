@@ -26,7 +26,7 @@ size_t read_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
 size_t write_cb(void *data, size_t size, size_t nmemb, void *userdata) {
     const size_t real_size = size * nmemb;
     MemoryStruct *response = userdata;
-    char *temp_memory = realloc(response->memory, response->size + real_size + 1);
+    char *temp_memory = (char*)realloc(response->memory, response->size + real_size + 1);
     if (temp_memory == NULL) {
         perror("Failed to allocate memory for response data!");
         return CURL_WRITEFUNC_ERROR;
@@ -62,7 +62,7 @@ int make_request(char *url, rtype_t type, char *body, rheader_t *headerFields, s
     CURL *curl = curl_easy_init();
     CURLcode result;
 
-    char *safeUrl = malloc(strlen(url) + 1);
+    char *safeUrl = (char*)malloc(strlen(url) + 1);
     strcpy(safeUrl, url);
     if (queries != NULL) {
         for (int i = 0; i < qnum; i++) {
@@ -99,7 +99,7 @@ int make_request(char *url, rtype_t type, char *body, rheader_t *headerFields, s
     headers = curl_slist_append(headers, "Accept: application/json");
     if (headerFields != NULL) {
         for (int i = 0; i < hnum; i++) {
-            char *header = malloc(strlen(headerFields[i].key) + strlen(headerFields[i].value));
+            char *header = (char*)malloc(strlen(headerFields[i].key) + strlen(headerFields[i].value));
             sprintf(header, "%s: %s", headerFields[i].key, headerFields[i].value);
             headers = curl_slist_append(headers, header);
         }
@@ -107,11 +107,11 @@ int make_request(char *url, rtype_t type, char *body, rheader_t *headerFields, s
 
     MemoryStruct upload_data;
     if (body) {
-        upload_data.memory = malloc(strlen(body) + 1);
+        upload_data.memory = (char*)malloc(strlen(body) + 1);
         memcpy(upload_data.memory, body, strlen(body) + 1);
         upload_data.size = strlen(body);
     }
-    MemoryStruct response_data = {malloc(1), 0};
+    MemoryStruct response_data = {(char*)malloc(1), 0};
 
     curl_easy_setopt(curl, CURLOPT_URL, safeUrl);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
@@ -145,7 +145,7 @@ int make_request(char *url, rtype_t type, char *body, rheader_t *headerFields, s
     int http_code = 0;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 
-    char *temp_memory = realloc(*response, response_data.size);
+    char *temp_memory = realloc(*response, sizeof(size_t) * response_data.size);
     if (temp_memory == NULL) {
         perror("Failed to allocate enough memory for response!");
         free_memory(type, upload_data, response_data, headers, curl);
