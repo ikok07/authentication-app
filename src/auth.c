@@ -15,17 +15,18 @@
 #include "../include/http_handler.h"
 #include "../include/auth_validator.h"
 #include "../include/encryption.h"
+#include "../include/user_details.h"
 
-char *retrieve_credentials(bool ingore_err) {
+char *retrieve_credentials(bool ignore_err) {
     FILE *fp = fopen("../config/auth.bin", "rb");
     if (fp == NULL) {
-        if (!ingore_err) perror("Failed to retrieve credentials!");
+        if (!ignore_err) perror("Failed to retrieve credentials!");
         return NULL;
     }
 
     einfo_t *enc_info = malloc(sizeof(einfo_t));
     if (enc_info == NULL) {
-        if (!ingore_err) perror("Failed to retrieve credentials!");
+        if (!ignore_err) perror("Failed to retrieve credentials!");
         fclose(fp);
         return NULL;
     }
@@ -46,7 +47,7 @@ char *retrieve_credentials(bool ingore_err) {
     int result = decrypt_text(credentials, enc_info);
 
     if (result != 0) {
-        if (!ingore_err) perror("Failed to retrieve credentials!");
+        if (!ignore_err) perror("Failed to retrieve credentials!");
         sodium_memzero(credentials, enc_info->encrypted_size);
         free(credentials);
         free(enc_info->encrypted_msg);
@@ -63,9 +64,7 @@ char *retrieve_credentials(bool ingore_err) {
 }
 
 int save_credentials(char *token) {
-    printf("HELLO");
     einfo_t *enc_info = malloc(sizeof(einfo_t));
-    printf("WORLD");
     if (enc_info == NULL) {
         perror("Failed to save credentials");
         return -1;
@@ -149,6 +148,7 @@ int login() {
         return -4;
     }
 
+    has_details = fetch_user_details(&u_details);
     return 0;
 }
 
@@ -216,17 +216,32 @@ int signup() {
     return 0;
 }
 
+int logout() {
+    int result = remove("../config/auth.bin");
+    if (result != 0) {
+        perror("Failed to logout!");
+        return -1;
+    }
+
+    printf("Successfully logged out of your profile!\n");
+    return 0;
+}
+
 void authenticate() {
     char *token = retrieve_credentials(true);
 
-    if (token != NULL) return;
+    if (token != NULL) {
+        has_details = fetch_user_details(&u_details);
+        free(token);
+        return;
+    }
 
     while (token == NULL) {
         int option;
         printf("Enter or create your account:\n");
         printf("1. Log in\n");
         printf("2. Sign up\n");
-        printf("3. Exit\n");
+        printf("-1. Exit\n");
         scanf("%d", &option);
 
         switch (option) {
@@ -236,7 +251,7 @@ void authenticate() {
             case 2:
                 if (signup() == 0) token = retrieve_credentials(false);
                 break;
-            case 3:
+            case -1:
                 exit(1);
             default:
                 printf("Invalid option selected!");

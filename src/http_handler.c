@@ -8,6 +8,7 @@
 #include <string.h>
 #include <cjson/cJSON.h>
 #include "../include/http_handler.h"
+#include "../include/auth.h"
 
 
 size_t read_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
@@ -40,15 +41,19 @@ size_t write_cb(void *data, size_t size, size_t nmemb, void *userdata) {
 }
 
 void print_error(const char *response) {
+    fprintf(stderr, "\n\n");
     fprintf(stderr, "HTTP Request failed!\n");
     cJSON *json_response = cJSON_Parse(response);
     if (json_response == NULL) {
         fprintf(stderr, "Failed to parse response error in JSON format!\n");
     }
     cJSON *id = cJSON_GetObjectItemCaseSensitive(json_response, "identifier");
-    cJSON *message = cJSON_GetObjectItemCaseSensitive(json_response, "message");
-    if (id != NULL && id->valuestring != NULL) fprintf(stderr, "Error identifier: %s\n", id->valuestring);
-    if (id != NULL && message->valuestring) fprintf(stderr, "Error message: %s\n", message->valuestring);
+    cJSON *error = cJSON_GetObjectItemCaseSensitive(json_response, "error");
+    if (id != NULL && id->valuestring != NULL) {
+        fprintf(stderr, "Error identifier: %s\n", id->valuestring);
+        if (strcmp(id->valuestring, "unAuthorized") == 0) logout();
+    }
+    if (error != NULL && error->valuestring != NULL) fprintf(stderr, "Error message: %s\n", error->valuestring);
     fprintf(stderr, "RAW RESPONSE: %s", response);
 }
 
@@ -133,6 +138,17 @@ int make_request(char *url, rtype_t type, char *body, rheader_t *headerFields, s
                 perror("Invalid request type! If you use GET do not provide body!");
                 free_memory(type, upload_data, response_data, headers, curl);
             return 1;
+        }
+    } else {
+        switch (type) {
+            case GET:
+                break;
+            case DEL:
+                curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+                break;
+            default:
+                perror("Invalid request type! For POST and PUT request you need to provide body!");
+                free_memory(type, upload_data, response_data, headers, curl);
         }
     }
 

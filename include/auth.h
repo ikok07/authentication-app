@@ -7,7 +7,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-char *retrieve_credentials(bool ingore_err);
+char *retrieve_credentials(bool ignore_err);
 void authenticate();
+int logout();
 
 #endif //AUTH_H
