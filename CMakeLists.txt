@@ -13,7 +13,9 @@ add_executable(clothing_app src/main.c
         src/utils.c
         include/utils.h
         src/encryption.c
-        include/encryption.h)
+        include/encryption.h
+        src/user_details.c
+        include/user_details.h)
 
 find_package(CURL REQUIRED)
 target_link_libraries(clothing_app PRIVATE CURL::libcurl)
@@ -23,5 +25,4 @@ target_link_libraries(clothing_app PRIVATE cjson)
 
 find_package(unofficial-sodium CONFIG REQUIRED)
 target_link_libraries(clothing_app PRIVATE unofficial-sodium::sodium)
-
 

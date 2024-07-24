@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <curl/curl.h>
 #include <stdbool.h>
+#include <string.h>
 #include <cjson/cJSON.h>
 #include "../include/http_handler.h"
 
@@ -53,7 +54,7 @@ void print_error(const char *response) {
 
 void free_memory(rtype_t type, MemoryStruct upload_data, MemoryStruct response_data, struct curl_slist *headers, CURL *curl) {
     // if (type != PUT) free(upload_data.memory);
-    free(response_data.memory);
+    if (response_data.memory != NULL) free(response_data.memory);
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
 }
@@ -142,10 +143,7 @@ int make_request(char *url, rtype_t type, char *body, rheader_t *headerFields, s
         return 1;
     }
 
-    int http_code = 0;
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-
-    char *temp_memory = realloc(*response, sizeof(size_t) * response_data.size);
+    char *temp_memory = realloc(*response, sizeof(size_t) * response_data.size + 1);
     if (temp_memory == NULL) {
         perror("Failed to allocate enough memory for response!");
         free_memory(type, upload_data, response_data, headers, curl);
@@ -155,7 +153,11 @@ int make_request(char *url, rtype_t type, char *body, rheader_t *headerFields, s
     memcpy(*response, response_data.memory, response_data.size + 1);
     free_memory(type, upload_data, response_data, headers, curl);
 
-    bool responseFailed = http_code >= 300 || http_code < 200;
+    cJSON *response_json = cJSON_Parse(*response);
+    if (response_json == NULL) return 1;
+    cJSON *status = cJSON_GetObjectItemCaseSensitive(response_json, "status");
+    if (status == NULL || status->valuestring == NULL) return 1;
+    bool responseFailed = strcmp(status->valuestring, "success") != 0;
     if (responseFailed) print_error(*response);
     return responseFailed ? 1 : 0;
 }

@@ -5,19 +5,27 @@
 #include "../include/auth.h"
 #include "../include/utils.h"
 #include "../include/encryption.h"
+#include "../include/user_details.h"
 
 
-void executeOption(int option) {
+void executeOption(int option, user_details_t *details) {
 
 }
 
 void listOptions() {
-    printf("Options:\n");
-    // int option = 0;
-    // do {
-    //
-    //     executeOption(option);
-    // } while (option >= 0);
+    user_details_t *details;
+    int has_details = fetch_user_details(&details);
+
+    int option = 0;
+    do {
+        printf("Select option:\n");
+        if (has_details == 0) printf("1. Update user details\n");
+        else printf("1. Create user details\n ");
+        printf("2. Display user details\n");
+        printf("-1. Exit\n");
+        scanf("%d", &option);
+        executeOption(option, details);
+    } while (option >= 0);
 }
 
 

@@ -1,3 +1,3 @@
-C:/Users/ifloa/CLionProjects/clothing-app/cmake-build-debug/CMakeFiles/clothing_app.dir
-C:/Users/ifloa/CLionProjects/clothing-app/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/ifloa/CLionProjects/clothing-app/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/macos/CLionProjects/clothing-app/cmake-build-debug/CMakeFiles/clothing_app.dir
+/Users/macos/CLionProjects/clothing-app/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/macos/CLionProjects/clothing-app/cmake-build-debug/CMakeFiles/rebuild_cache.dir

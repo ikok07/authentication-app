@@ -103,9 +103,9 @@ int login() {
     char password[100];
     char confirm_password[100] = "123Prudni@";
     printf("Enter your email:\n");
-    scanf_s("%s", email);
+    scanf("%s", email);
     printf("Enter your password:\n");
-    scanf_s("%s", password);
+    scanf("%s", password);
 
 
     cJSON *json = cJSON_CreateObject();
@@ -158,21 +158,21 @@ int signup() {
     char password[100];
     char confirm_password[100];
     printf("Enter your username (max 100 characters)\n");
-    scanf_s(" %[^\n]%*c", username, 100);
+    scanf(" %[^\n]%*c", username);
     printf("Enter your email\n");
-    scanf_s(" %s", email);
+    scanf(" %s", email);
 
     char *passwd_validation;
     do {
         printf("Enter your password (6 - 100 characters)\n");
-        scanf_s(" %s", password);
+        scanf(" %s", password);
         passwd_validation = validate_pass(password);
         if (passwd_validation != NULL) printf("%s\n", passwd_validation);
     } while (passwd_validation != NULL);
 
     do {
         printf("Confirm your password:\n");
-        scanf_s(" %s", confirm_password);
+        scanf(" %s", confirm_password);
         if (strcmp(confirm_password, password) != 0) printf("Passwords don't match!\n");
     } while (strcmp(confirm_password, password) != 0);
 
@@ -218,7 +218,7 @@ int signup() {
 
 void authenticate() {
     char *token = retrieve_credentials(true);
-    printf("token: %s\n", token);
+
     if (token != NULL) return;
 
     while (token == NULL) {
@@ -227,7 +227,7 @@ void authenticate() {
         printf("1. Log in\n");
         printf("2. Sign up\n");
         printf("3. Exit\n");
-        scanf_s("%d", &option);
+        scanf("%d", &option);
 
         switch (option) {
             case 1:
