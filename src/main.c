@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <sodium.h>
+#include <jwt.h>
 
 #include "../include/auth.h"
 #include "../include/utils.h"

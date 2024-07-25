@@ -6,5 +6,6 @@
 #define AUTH_VALIDATOR_H
 
 char *validate_pass(const char *password);
+int validate_jwt(char *token);
 
 #endif //AUTH_VALIDATOR_H

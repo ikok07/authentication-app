@@ -231,9 +231,13 @@ void authenticate() {
     char *token = retrieve_credentials(true);
 
     if (token != NULL) {
-        has_details = fetch_user_details(&u_details);
-        free(token);
-        return;
+        int result = validate_jwt(token);
+        if (result != 0) {
+            logout();
+            has_details = fetch_user_details(&u_details);
+            free(token);
+            return;
+        }
     }
 
     while (token == NULL) {

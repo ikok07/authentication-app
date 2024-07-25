@@ -6,6 +6,8 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include <jwt.h>
+#include <stdlib.h>
 
 int validate_token(const char *token) {
 
@@ -26,4 +28,21 @@ char *validate_pass(const char *password) {
     if (!has_uppercase) return "Password must contain atleast one uppercase letter!";
     if (!has_special_symbol) return "Password must contain atleast one special symbol!";
     return NULL;
+}
+
+int validate_jwt(char *token) {
+    char *key = getenv("JWT_KEY");
+    jwt_t *jwt = NULL;
+    int result = jwt_decode(&jwt, token, (unsigned char *)key, (int)strlen(key));
+    if (result != 0) {
+        perror("Failed to validate JWT");
+        return -1;
+    }
+    long exp = jwt_get_grant_int(jwt, "exp");
+
+    time_t curr_time = time(NULL);
+    double secs = difftime(curr_time, exp);
+    if (secs > 0) return -2;
+
+    return 0;
 }
